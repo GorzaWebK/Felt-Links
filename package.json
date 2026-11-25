@@ -1,0 +1,16 @@
+{
+  "name": "felt-links",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Side-on crazy golf across felt and patchwork landscapes stitched onto a quilt",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "check:holes": "node tools/check-holes.mjs"
+  },
+  "devDependencies": {
+    "vite": "^7.3.0"
+  }
+}
