@@ -14,7 +14,7 @@ export const attic = [
     surface: 'felt',
     ground: [[0, 500], [1600, 500]],
     objs: [{ type: 'needle', x: 800, top: 330, high: 372, low: 497, period: 2.4 }],
-    notes: [{ x: 640, y: 300, text: 'wait for the needle to lift' }],
+    notes: [{ x: 470, y: 250, text: 'wait for the needle to lift' }],
     intro: 'needle',
   },
   {

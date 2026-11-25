@@ -123,22 +123,46 @@ export class Renderer {
 
   buildLayer() {
     const world = this.world;
-    const ls = Math.min(this.fitScale() * this.dpr, Math.sqrt(9e6 / ((world.w + PAD * 2) * (world.h - BG_TOP + 260))));
-    this.layerScale = ls;
-    const lw = (world.w + PAD * 2) * ls;
-    const lh = (world.h - BG_TOP + 260) * ls;
-    const c = makeCanvas(lw, lh);
-    const g = c.getContext('2d');
-    g.scale(ls, ls);
-    g.translate(PAD, -BG_TOP);
-    this.drawBackdrop(g);
-    this.drawWaterBodies(g);
-    this.drawGround(g);
-    this.drawSolids(g);
-    this.drawCup(g);
-    this.drawStaticBits(g);
-    this.drawNotes(g);
-    this.layer = c;
+    // Free the previous hole's layer first: phones have a tight budget for canvas
+    // memory, and a big canvas that can't be allocated silently draws nothing.
+    if (this.layer) {
+      this.layer.width = 0;
+      this.layer.height = 0;
+      this.layer = null;
+    }
+    const area = (world.w + PAD * 2) * (world.h - BG_TOP + 260);
+    let budget = 6e6; // pixels
+    for (let attempt = 0; attempt < 4; attempt++, budget /= 2) {
+      const ls = Math.min(this.fitScale() * this.dpr, Math.sqrt(budget / area));
+      const lw = (world.w + PAD * 2) * ls;
+      const lh = (world.h - BG_TOP + 260) * ls;
+      const c = makeCanvas(lw, lh);
+      const g = c.getContext('2d');
+      if (!g) continue;
+      g.scale(ls, ls);
+      g.translate(PAD, -BG_TOP);
+      this.drawBackdrop(g);
+      this.drawWaterBodies(g);
+      this.drawGround(g);
+      this.drawSolids(g);
+      this.drawCup(g);
+      this.drawStaticBits(g);
+      this.drawNotes(g);
+      // The middle of the layer is always quilt, so it must be opaque.
+      let ok = true;
+      try {
+        ok = g.getImageData(c.width >> 1, c.height >> 1, 1, 1).data[3] > 0;
+      } catch {
+        ok = true;
+      }
+      if (ok) {
+        this.layer = c;
+        this.layerScale = ls;
+        return;
+      }
+      c.width = 0;
+      c.height = 0;
+    }
   }
 
   drawBackdrop(g) {
